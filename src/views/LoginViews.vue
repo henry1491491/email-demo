@@ -1,11 +1,12 @@
 <template>
   <div class="views-login_view">
     <loading :active.sync="isLoading"></loading>
+    <!--  test-link -->
     <div class="a-test">
       <a
         @click="loginStatus = 'loginUser'"
         href="#"
-      >loginUser</a> |
+      >loginUser</a>|
       <a
         @click="loginStatus = 'loginChooseUser'"
         href="#"
@@ -18,6 +19,10 @@
         @click="loginStatus = 'loginConfirmName'"
         href="#"
       >loginConfirmName</a> |
+      <a
+        @click="loginStatus = 'loginGetEmailValidCode'"
+        href="#"
+      >loginGetEmailValidCode</a> |
       <a
         @click="loginStatus = 'loginAccountNotFound'"
         href="#"
@@ -63,8 +68,11 @@
         href="#"
       >loginSucess</a>
     </div>
-
-    <div class="login">
+    <!-- main-->
+    <div
+      v-if="loginStatus !== 'loading'"
+      class="login"
+    >
       <div class="card-logo-group">
         <div class="card-logo">
           <img
@@ -156,20 +164,20 @@
             sub-title=""
             class="login-card"
           >
-            <div v-if="users.users.email">
+            <div v-if="users.userData">
               <b-alert show>
                 <font-awesome-icon
                   class="mr-2"
                   icon="user"
                 />
-                <b>{{users.users.userName}}</b>
+                <b>{{users.userData.userName}}</b>
                 您好！
               </b-alert>
             </div>
             <b-alert
               show
               variant="secondary"
-            >帳號：{{users.users.email}}</b-alert>
+            >帳號：{{users.userData.email}}</b-alert>
 
             <ValidationProvider
               rules="required|requireOneNumeric|minmax:8,12"
@@ -199,7 +207,7 @@
             </div>
           </b-card>
         </div>
-        <!--loginChooseUser-->
+        <!-- loginChooseUser -->
         <div
           v-if="loginStatus == 'loginChooseUser'"
           class="login-choose-user"
@@ -269,7 +277,7 @@
             </div>
           </b-card>
         </div>
-        <!--loginConfirmName-->
+        <!-- oginConfirmName -->
         <div
           v-if="loginStatus == 'loginConfirmName'"
           class="login-confirm-name"
@@ -280,7 +288,7 @@
             class="login-card"
           >
             <ValidationObserver ref="formName">
-              <form @submit.prevent="loginHandler">
+              <form @submit.prevent="loginFindEmailByName">
                 <ValidationProvider
                   name="姓氏"
                   rules="required"
@@ -318,7 +326,7 @@
             </div>
           </b-card>
         </div>
-        <!--loginAccountNotFound-->
+        <!-- loginAccountNotFound -->
         <div
           v-if="loginStatus == 'loginAccountNotFound'"
           class="login-account-not-found"
@@ -337,6 +345,79 @@
             </div>
           </b-card>
         </div>
+        <!-- loginGetEmailValidCode -->
+        <div
+          v-if="loginStatus == 'loginGetEmailValidCode'"
+          class="login-get-email-valid-code"
+        >
+          <b-card
+            title="取得驗證碼"
+            sub-title=""
+            class="login-card"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1557568192-387504499261?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
+              width="366px"
+              height="200px"
+              alt="emailbox"
+            >
+            <b-card-text class="text-left mt-1">
+              我們會將驗證碼傳送到您的信箱 {{users.userData.email}}。 在您輸入驗證碼後，即可登入。
+            </b-card-text>
+
+            <div class="d-flex mt-3">
+              <b-button
+                @click="loginGetValidCode"
+                variant="primary"
+                class="pass-btn ml-auto"
+              >傳送</b-button>
+            </div>
+          </b-card>
+        </div>
+        <!-- loginReicieveEmailCode -->
+        <div
+          v-if="loginStatus == 'loginReicieveEmailCode'"
+          class="login-reicieve-email-code"
+        >
+          <b-card
+            title="輸入驗證碼"
+            sub-title="請提供近一步資訊，協助我們進行帳戶救援程序"
+            class="login-card"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1508817172652-4be4be2795cb?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
+              width="366px"
+              height="200px"
+              alt="emailbox"
+            >
+            <b-card-text class="text-left mt-3">
+              <p>內含 6 位數驗證碼的信件已寄送至{{users.userData.email}}</p>
+            </b-card-text>
+
+            <ValidationProvider
+              name="驗證碼"
+              rules="required|validcode:6"
+            >
+              <!--  加上 immediate 屬性可以在頁面一渲染及顯示驗證錯誤訊息-->
+              <div slot-scope="{ errors }">
+                <b-form-input
+                  v-model="user.validCode"
+                  placeholder="請輸入驗證碼"
+                >
+                </b-form-input>
+                <p class="err-msg">{{ errors[0] }}</p>
+              </div>
+            </ValidationProvider>
+
+            <div class="d-flex">
+              <b-button
+                @click="loginValidCode"
+                variant="primary"
+                class="pass-btn ml-auto"
+              >繼續</b-button>
+            </div>
+          </b-card>
+        </div>
         <!-- loginRegister -->
         <div
           v-if="loginStatus == 'loginRegister'"
@@ -347,14 +428,14 @@
             sub-title=""
             class="login-card"
           >
-            <ValidationObserver v-slot="{ handleSubmit }">
-              <form @submit.prevent="handleSubmit(onSubmit)">
+            <ValidationObserver ref="formRegister">
+              <form @submit.prevent="loginRegister">
                 <div class="username-input-group">
                   <div class="row">
                     <div class="col-md-6">
                       <ValidationProvider
                         name="姓氏"
-                        rules="required|alpha"
+                        rules="required"
                         v-slot="{ errors }"
                       >
                         <b-form-input
@@ -367,7 +448,7 @@
                     <div class="col-md-6">
                       <ValidationProvider
                         name="名字"
-                        rules="required|alpha"
+                        rules="required"
                         v-slot="{ errors }"
                       >
                         <b-form-input
@@ -407,6 +488,7 @@
                       >
                         <b-form-input
                           v-model="user.password"
+                          type="password"
                           placeholder="密碼"
                         ></b-form-input>
                         <p class="err-msg">{{ errors[0] }}</p>
@@ -421,6 +503,7 @@
                       >
                         <b-form-input
                           v-model="user.passwordConfirm"
+                          type="password"
                           placeholder="確認"
                         ></b-form-input>
                         <p class="err-msg">{{ errors[0] }}</p>
@@ -442,7 +525,6 @@
                     </div>
                   </div>
                 </div>
-
                 <b-card-text>請混合使用 8 個字元以上的英文字母、數字和符號 </b-card-text>
                 <div class="d-flex mt-3">
                   <b-link
@@ -451,6 +533,7 @@
                     class="card-link mr-auto"
                   >請改為登入帳戶</b-link>
                   <b-button
+                    @click="loginRegister"
                     type="submit"
                     variant="outline-primary"
                   >繼續</b-button>
@@ -469,42 +552,60 @@
             sub-title=""
             class="login-card"
           >
-            <div class="username-input-group">
-              <div class="row">
-                <div class="col-md-2">
-                  <b-form-select
-                    v-model="user.contry"
-                    :options="contryOptions"
-                  ></b-form-select>
+            <ValidationObserver ref="formWelcome">
+              <form @submit.prevent="loginWelcome">
+                <div class="username-input-group">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <b-form-select
+                        v-model="user.contry"
+                        :options="contryOptions"
+                      ></b-form-select>
+                    </div>
+                    <div class="col-md-8">
+                      <ValidationProvider
+                        name="電話"
+                        rules="required|numeric"
+                        v-slot="{ errors }"
+                      >
+                        <b-form-input
+                          v-model="user.phone"
+                          placeholder="輸入您的電話號碼"
+                        ></b-form-input>
+                        <p class="err-msg">{{ errors[0] }}</p>
+                      </ValidationProvider>
+                    </div>
+                  </div>
                 </div>
-                <div class="col-md-10">
-                  <b-form-input
-                    v-model="user.phone"
-                    placeholder="輸入您的電話號碼"
-                  ></b-form-input>
+                <b-card-text class="text-left">我們會將您的電話號碼用於維護帳戶安全，並不會向他人顯示這項資訊</b-card-text>
+                <div class="username-input-group">
+                  <div class="row">
+                    <div class="col-md-12">
+                      <ValidationProvider
+                        name="信箱"
+                        rules="required|email"
+                        v-slot="{ errors }"
+                      >
+                        <b-form-input
+                          v-model="user.emailSpare"
+                          placeholder="備援電子郵件地址(選填)"
+                        ></b-form-input>
+                        <p class="err-msg">{{ errors[0] }}</p>
+                      </ValidationProvider>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <b-card-text class="text-left">我們會將您的電話號碼用於維護帳戶安全，並不會向他人顯示這項資訊</b-card-text>
-            <div class="username-input-group">
-              <div class="row">
-                <div class="col-md-12">
-                  <b-form-input
-                    v-model="user.emailSpare"
-                    placeholder="備援電子郵件地址(選填)"
-                  ></b-form-input>
+                <b-card-text class="text-left">我們用來確保帳戶安全無虞</b-card-text>
+                <div class="username-input-group">
+                  <div class="row">
+                    <div class="col-md-12">
+                      <datepicker :value="state.date"></datepicker>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <b-card-text class="text-left">我們用來確保帳戶安全無虞</b-card-text>
-            <div class="username-input-group">
-              <div class="row">
-                <div class="col-md-12">
-                  <datepicker :value="state.date"></datepicker>
-                </div>
-              </div>
-            </div>
-            <b-card-text class="text-left">您的生日</b-card-text>
+                <b-card-text class="text-left">您的生日</b-card-text>
+              </form>
+            </ValidationObserver>
             <b-card-text class="text-left">
               <a
                 href="#"
@@ -513,10 +614,15 @@
             </b-card-text>
             <div class="d-flex mt-3">
               <b-link
+                @click="loginStatus = 'loginRegister'"
                 href="#"
                 class="card-link mr-auto"
               >返回</b-link>
-              <b-button variant="outline-primary">繼續</b-button>
+              <b-button
+                @click="loginWelcome"
+                type="submit"
+                variant="outline-primary"
+              >繼續</b-button>
             </div>
           </b-card>
         </div>
@@ -659,8 +765,27 @@
         </div>
       </div>
     </div>
-
-    <div class="card-foot d-flex">
+    <!-- page-down -->
+    <div
+      v-if="loginStatus=='loading'"
+      class="card-logo"
+    >
+      <img
+        src="https://image.flaticon.com/icons/svg/624/624497.svg"
+        style="width:250px;height:250px"
+        class="d-inline-block align-top"
+        alt="DoveEmail"
+      >
+      <h2 class="card-logo-title mt-2">正在載入⋯⋯</h2>
+      <h3 class="card-logo-title mt-2">
+        榖鴿郵箱
+      </h3>
+    </div>
+    <!-- card-foot -->
+    <div
+      v-if="loginStatus !== 'loading'"
+      class="card-foot d-flex"
+    >
       <b-form-select
         v-model="selected"
         :options="options"
@@ -687,6 +812,8 @@ import "vue-loading-overlay/dist/vue-loading.css";
 import Datepicker from "vuejs-datepicker";
 import { validate } from "vee-validate";
 import { extend } from "vee-validate";
+import axios from "axios";
+import MockAdapter from "axios-mock-adapter";
 
 extend("requireOneNumeric", {
   validate(value) {
@@ -703,6 +830,14 @@ extend("minmax", {
   message: "{_field_} 數字長度需介於{min}到{max}之間"
 });
 
+extend("validcode", {
+  validate(value, { min }) {
+    return value.length == min;
+  },
+  params: ["min"],
+  message: "{_field_} 數字長度為六位數"
+});
+
 extend("password", {
   params: ["target"],
   validate(value, { target }) {
@@ -710,6 +845,7 @@ extend("password", {
   },
   message: "密碼不一致"
 });
+
 export default {
   name: "LoginViews",
   components: {
@@ -723,27 +859,20 @@ export default {
         date: new Date(2016, 9, 16)
       },
       loginStatus: "loginUser",
-      tempUser: {
-        id: "",
-        contry: "",
-        emailTelephone: "",
-        fName: "",
-        lName: "",
-        userName: "",
-        password: "",
-        email: null,
-        birthday: ""
-      },
       user: {
         id: "",
+        sex: "",
         contry: "",
         emailTelephone: "",
         fName: "",
         lName: "",
         userName: "",
+        email: "",
+        emailSpare: "",
         password: "",
-        email: null,
-        birthday: ""
+        passwordConfirm: "",
+        birthday: "",
+        validCode: ""
       },
       users: {},
       dispaly: false,
@@ -777,6 +906,11 @@ export default {
   },
   methods: {
     /*
+     *** 重要 ***
+     * 因為對 Http 不熟，請求先用 get，等補完這塊馬上改成正確的！！
+     * 到時候當然 api 路徑也會改！！
+     *
+     *** 筆記 ***
      * $ref 是 Vue 元件的一個屬性，可以用來取 Vue 的 Dom 元素，這邊就衍生了一堆不太   清的觀念比方說：
      * 1. $refs 跟 nextTick() 之間的搭配及 nextTick 與 生命週期
      * 2. 所謂地不能響應是什麼意思？
@@ -786,64 +920,46 @@ export default {
      * 6. 判斷有無重複資料
      * 7. 判斷是電話還是 E-mail 的機制
      */
-
     loginHandler() {
       this.$refs.form.validate().then(success => {
         if (!success) {
           return;
         }
         this.isLoading = true;
-        window.setTimeout(() => {
-          // 模擬後端取得成功的資料
-          let res = {
-            data: {
-              success: true,
-              message: "",
-              userData: {
-                id: 1,
-                contry: "Taiwan",
-                emailTelephone: "test123@gmail.com",
-                fName: "Henry",
-                lName: "Wu",
-                userName: "test123",
-                password: "test123",
-                email: "test123@gmail.com",
-                birthday: "1993/11/30"
-              }
-            }
-          };
-          // 假設 post 名稱後發現與資料庫內資料重複，則回應
-          /*
-          this.$refs.form.setErrors({
-            email: ["This email is already taken"]
-          });
-          */
-          if (res.data.success) {
-            console.log(res);
-            this.$set(this.users, "users", res.data.userData);
-            this.user.emailTelephone = "";
-            this.isLoading = false;
-            this.loginStatus = "loginPassword";
-          } else {
-            res.data.message = "登入失敗！";
-            this.user.emailTelephone = "";
-            this.isLoading = false;
-          }
-        }, 1000);
-        //然後透過 Axios 向後端 post 資料
+        let mock = new MockAdapter(axios, { delayResponse: 1000 });
 
-        /*
-        this.axios.post(api, this.user.emailTelephone).then(res => {
-          if (!res.data.success) {
-            console.log(err);
+        mock.onGet("/api/login").reply(200, {
+          success: true,
+          message: "帳號存在",
+          userData: {
+            id: 1,
+            sex: "male",
+            contry: "Taiwan",
+            emailTelephone: "test123@gmail.com",
+            fName: "Henry",
+            lName: "Wu",
+            userName: "test123",
+            email: "test123@gmail.com",
+            emailSpare: "",
+            password: "test123",
+            passwordConfirm: "test123",
+            birthday: "1993/11/30",
+            validCode: "123456"
           }
-          this.loginStatus = "loginPassword"; // 好奇這邊是不是不會響應？也就是畫面不會更新？是否就要使用 nextTick()?
-          this.user.emailTelephone = "";
-          this.$nextTick(() => {
-            this.$refs.form.reset();
-          });
         });
-        */
+
+        axios.get("/api/login").then(res => {
+          if (!res.data.success) {
+            res.data.message = "帳號不存在！";
+            this.isLoading = false;
+            this.user.emailTelephone = "";
+            return;
+          }
+          this.$set(this.users, "userData", res.data.userData);
+          this.isLoading = false;
+          this.user.emailTelephone = "";
+          this.loginStatus = "loginPassword";
+        });
       });
     },
     loginPasswordHandler() {
@@ -855,65 +971,121 @@ export default {
           return;
         }
         this.isLoading = true;
-        window.setTimeout(() => {
-          // 模擬後端取得成功的資料
-          let res = {
-            data: {
-              userData: {
-                id: 1,
-                contry: "Taiwan",
-                emailTelephone: "test123@gmail.com",
-                fName: "Henry",
-                lName: "Wu",
-                userName: "test123",
-                password: "test123",
-                email: "test123@gmail.com",
-                birthday: "1993/11/30"
-              },
-              success: true,
-              message: ""
-            }
-          };
-          if (res.data.success) {
-            this.$set(this.users, "users", res.data.userData);
-            this.user.password = "";
-            this.isLoading = false;
-            this.$router.push("/dashboard");
-          } else {
-            res.data.message = "登入失敗！";
-            this.user.password = "";
-            this.isLoading = false;
+        let mock = new MockAdapter(axios, { delayResponse: 1000 });
+
+        mock.onGet("/api/login/password").reply(200, {
+          success: true,
+          message: "登入成功",
+          userData: {
+            id: 1,
+            sex: "male",
+            contry: "Taiwan",
+            emailTelephone: "test123@gmail.com",
+            fName: "Henry",
+            lName: "Wu",
+            userName: "test123",
+            email: "test123@gmail.com",
+            password: "test123",
+            passwordConfirm: "test123",
+            birthday: "1993/11/30",
+            validCode: "123456"
           }
-        }, 1000);
+        });
+
+        axios.get("/api/login/password").then(res => {
+          if (!res.data.success) {
+            res.data.message = "登入失敗！";
+            this.isLoading = false;
+            this.user.password = "";
+            return;
+          }
+          // 1 秒後跳轉到動畫頁面（目前是一隻鳥跟榖鴿郵箱）
+          let loginloading = () => {
+            return new Promise((resolve, reject) => {
+              window.setTimeout(() => {
+                this.isLoading = false;
+                this.loginStatus = "loading";
+                resolve("A");
+              }, 0);
+            });
+          };
+          // 2 秒後進入 Dashboard 頁面
+          let dashboard = () => {
+            return new Promise((resolve, reject) => {
+              window.setTimeout(() => {
+                this.$router.push("/dashboard");
+                this.loginStatus = "";
+                this.user.password = "";
+                resolve("B");
+              }, 2000);
+            });
+          };
+          async function pagejump() {
+            let result;
+            result = await loginloading();
+            //console.log("A", result);
+            result = await dashboard();
+            //console.log("B", result);
+          }
+          if (!this.users.userData) {
+            this.$set(this.users, "userData", res.data.userData);
+            pagejump();
+          }
+          pagejump();
+        });
       });
     },
     loginFindEmail() {
-      let findemail = this.user.email;
-      validate(findemail, "required|email", {
+      let email = this.user.email;
+      validate(email, "required|email", {
         name: "信箱"
       }).then(result => {
         if (!result.valid) {
           return;
         }
         this.isLoading = true;
-        window.setTimeout(() => {
-          // 模擬後端取得成功的資料
-          let res = {
-            data: {
-              success: true,
-              message: ""
-            }
-          };
-          if (res.data.success) {
-            this.user.email = "";
+        let mock = new MockAdapter(axios, { delayResponse: 1000 });
+
+        mock.onGet("/api/forgotemail").reply(200, {
+          success: true,
+          message: "",
+          userData: {
+            id: 1,
+            sex: "male",
+            contry: "Taiwan",
+            emailTelephone: "test123@gmail.com",
+            fName: "Henry",
+            lName: "Wu",
+            userName: "test123",
+            email: "test123@gmail.com",
+            emailSpare: "",
+            password: "test123",
+            passwordConfirm: "test123",
+            birthday: "1993/11/30",
+            validCode: "123456"
+          }
+        });
+
+        axios.get("/api/forgotemail").then(res => {
+          if (!res.data.success) {
+            res.data.message = "帳號不存在！";
             this.isLoading = false;
+            this.user.email = "";
+            this.loginStatus = "loginAccountNotFound";
+            return;
+          }
+          // 下方判斷為確保 users 一直有存放假伺服器回應的資料
+          if (this.users.userData) {
+            this.isLoading = false;
+            this.user.email = "";
             this.loginStatus = "loginConfirmName";
           } else {
-            this.user.email = "";
+            this.$set(this.users, "userData", res.data.userData);
             this.isLoading = false;
-            this.loginStatus = "loginAccountNotFound";
+            this.user.email = "";
+            this.loginStatus = "loginConfirmName";
           }
-        }, 1000);
+        });
       });
     },
     loginFindEmailByName() {
@@ -922,59 +1094,269 @@ export default {
           return;
         }
         this.isLoading = true;
-        window.setTimeout(() => {
-          // 模擬後端取得成功的資料
-          let res = {
-            data: {
-              success: true,
-              message: ""
-            }
-          };
-          if (res.data.success) {
-            this.user.lName = this.user.fName = "";
-            this.isLoading = false;
-            this.loginStatus = "loginPassword";
-          } else {
-            this.user.lName = this.user.fName = "";
-            this.isLoading = false;
-            this.loginStatus = "loginAccountNotFound";
+        let mock = new MockAdapter(axios, { delayResponse: 1000 });
+
+        mock.onGet("/api/findemailbyname").reply(200, {
+          success: true,
+          message: "",
+          userData: {
+            id: 1,
+            sex: "male",
+            contry: "Taiwan",
+            emailTelephone: "test123@gmail.com",
+            fName: "Henry",
+            lName: "Wu",
+            userName: "test123",
+            email: "test123@gmail.com",
+            emailSpare: "",
+            password: "test123",
+            passwordConfirm: "test123",
+            birthday: "1993/11/30",
+            validCode: "123456"
           }
-        }, 1000);
+        });
+
+        axios.get("/api/findemailbyname").then(res => {
+          if (!res.data.success) {
+            res.data.message = "帳號不存在！";
+            this.isLoading = false;
+            this.user.lName = this.user.fname = "";
+            this.loginStatus = "loginAccountNotFound";
+            return;
+          }
+          // 下方判斷為確保 users 一直有存放假伺服器回應的資料
+          if (this.users.userData) {
+            this.isLoading = false;
+            this.user.lName = this.user.fname = "";
+            this.loginStatus = "loginGetEmailValidCode";
+          } else {
+            this.$set(this.users, "userData", res.data.userData);
+            this.isLoading = false;
+            this.user.lName = this.user.fname = "";
+            this.loginStatus = "loginGetEmailValidCode";
+          }
+        });
       });
-      /*
-      let lName = this.user.lName;
-      validate(lName, "required", { name: "姓氏" }).then(result => {
-        if (!result.valid) {
-          return;
+    },
+    loginGetValidCode() {
+      this.isLoading = true;
+      let mock = new MockAdapter(axios, { delayResponse: 1000 });
+
+      mock.onGet("/api/getemailcode").reply(200, {
+        success: true,
+        message: "",
+        userData: {
+          id: 1,
+          sex: "male",
+          contry: "Taiwan",
+          emailTelephone: "test123@gmail.com",
+          fName: "Henry",
+          lName: "Wu",
+          userName: "test123",
+          email: "test123@gmail.com",
+          emailSpare: "",
+          password: "test123",
+          passwordConfirm: "test123",
+          birthday: "1993/11/30",
+          validCode: "123456"
         }
       });
-      let fName = this.user.fName;
-      validate(fName, "required", {
-        name: "名字"
+
+      axios.get("/api/getemailcode").then(res => {
+        if (!res.data.success) {
+          res.data.message = "驗證碼傳送失敗！";
+          this.isLoading = false;
+          this.loginStatus = "請求失敗的頁面";
+          return;
+        }
+        // 下方判斷為確保 users 一直有存放假伺服器回應的資料
+        if (this.users.userData) {
+          this.isLoading = false;
+          this.loginStatus = "loginReicieveEmailCode";
+        } else {
+          this.$set(this.users, "userData", res.data.userData);
+          this.isLoading = false;
+          this.loginStatus = "loginReicieveEmailCode";
+        }
+      });
+    },
+    loginValidCode() {
+      let validcode = this.user.validCode;
+      validate(validcode, "required|validcode:6", {
+        name: "驗證碼"
       }).then(result => {
         if (!result.valid) {
           return;
         }
+      });
+      this.isLoading = true;
+      let mock = new MockAdapter(axios, { delayResponse: 1000 });
+
+      mock.onGet("/api/validcode").reply(200, {
+        success: true,
+        message: "",
+        userData: {
+          id: 1,
+          sex: "male",
+          contry: "Taiwan",
+          emailTelephone: "test123@gmail.com",
+          fName: "Henry",
+          lName: "Wu",
+          userName: "test123",
+          email: "test123@gmail.com",
+          emailSpare: "",
+          password: "test123",
+          passwordConfirm: "test123",
+          birthday: "1993/11/30",
+          validCode: "123456"
+        }
+      });
+
+      axios.get("/api/validcode").then(res => {
+        if (!res.data.success) {
+          res.data.message = "驗證失敗！";
+          this.isLoading = false;
+          this.user.validCode = "";
+          //this.loginStatus = ""; 有想過直接跳出一個 alert 訊息
+          return;
+        }
+        // 下方判斷為確保 users 一直有存放假伺服器回應的資料
+        if (this.users.userData) {
+          this.isLoading = false;
+          this.user.validCode = "";
+          this.loginStatus = "loginChooseUser";
+        } else {
+          this.$set(this.users, "userData", res.data.userData);
+          this.isLoading = false;
+          this.user.validCode = "";
+          this.loginStatus = "loginChooseUser";
+        }
+      });
+    },
+    loginRegister() {
+      this.$refs.formRegister.validate().then(success => {
+        if (!success) {
+          return;
+        }
         this.isLoading = true;
-        window.setTimeout(() => {
-          // 模擬後端取得成功的資料
-          let res = {
-            data: {
-              success: true,
-              message: ""
-            }
-          };
-          if (res.data.success) {
-            this.user.lName = this.user.fName = "";
-            this.isLoading = false;
-            this.loginStatus = "loginPassword";
-          } else {
-            this.user.lName = this.user.fName = "";
-            this.isLoading = false;
-            this.loginStatus = "loginAccountNotFound";
+        let mock = new MockAdapter(axios, { delayResponse: 1000 });
+
+        mock.onGet("/api/register").reply(200, {
+          success: true,
+          message: "",
+          userData: {
+            id: 1,
+            sex: "male",
+            contry: "Taiwan",
+            emailTelephone: "test123@gmail.com",
+            fName: "Henry",
+            lName: "Wu",
+            userName: "test123",
+            email: "test123@gmail.com",
+            emailSpare: "",
+            password: "test123",
+            passwordConfirm: "test123",
+            birthday: "1993/11/30",
+            validCode: "123456"
           }
-        }, 1000);
-      });*/
+        });
+
+        axios.get("/api/register").then(res => {
+          if (!res.data.success) {
+            res.data.message = "驗證失敗！";
+            this.isLoading = false;
+            this.user.lName = this.user.fName = this.user.userName = this.user.password = this.user.passwordConfirm =
+              "";
+            //this.loginStatus = ""; 有想過直接跳出一個 alert 訊息
+            return;
+          }
+          // 下方判斷為確保 users 一直有存放假伺服器回應的資料
+          if (this.users.userData) {
+            this.isLoading = false;
+            this.user.lName = this.user.fName = this.user.userName = this.user.password = this.user.passwordConfirm =
+              "";
+            this.loginStatus = "loginWelcome";
+          } else {
+            this.$set(this.users, "userData", res.data.userData);
+            this.isLoading = false;
+            this.user.lName = this.user.fName = this.user.userName = this.user.password = this.user.passwordConfirm =
+              "";
+            this.loginStatus = "loginWelcome";
+          }
+        });
+      });
+    },
+    loginWelcome() {
+      this.$refs.formWelcome.validate().then(success => {
+        if (!success) {
+          return;
+        }
+        this.isLoading = true;
+        let mock = new MockAdapter(axios, { delayResponse: 1000 });
+
+        mock.onGet("/api/welcome").reply(200, {
+          success: true,
+          message: "",
+          userData: {
+            id: 1,
+            sex: "male",
+            contry: "Taiwan",
+            emailTelephone: "test123@gmail.com",
+            fName: "Henry",
+            lName: "Wu",
+            userName: "test123",
+            email: "test123@gmail.com",
+            emailSpare: "",
+            password: "test123",
+            passwordConfirm: "test123",
+            birthday: "1993/11/30",
+            validCode: "123456"
+          }
+        });
+
+        axios.get("/api/welcome").then(res => {
+          if (!res.data.success) {
+            res.data.message = "驗證失敗！";
+            this.isLoading = false;
+            this.user.country = this.user.phone = this.user.emailSpare = "";
+            return;
+          }
+
+          // 1 秒後跳轉到動畫頁面（目前是一隻鳥跟榖鴿郵箱）
+          let loginloading = () => {
+            return new Promise((resolve, reject) => {
+              window.setTimeout(() => {
+                this.isLoading = false;
+                this.loginStatus = "loading";
+                resolve("A");
+              }, 0);
+            });
+          };
+          // 2 秒後進入 Dashboard 頁面
+          let dashboard = () => {
+            return new Promise((resolve, reject) => {
+              window.setTimeout(() => {
+                this.$router.push("/dashboard");
+                this.loginStatus = "";
+                this.user.country = this.user.phone = this.user.emailSpare = "";
+                resolve("B");
+              }, 2000);
+            });
+          };
+          async function pagejump() {
+            let result;
+            result = await loginloading();
+            //console.log("A", result);
+            result = await dashboard();
+            //console.log("B", result);
+          }
+          if (!this.users.userData) {
+            this.$set(this.users, "userData", res.data.userData);
+            pagejump();
+          }
+          pagejump();
+        });
+      });
     },
     log(val) {
       this.date = val;
