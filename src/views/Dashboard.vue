@@ -74,12 +74,6 @@
                 <font-awesome-icon icon="th" />
               </b-navbar-brand>
 
-              <b-navbar-brand @click="show=true">
-                <img
-                  src="https://image.flaticon.com/icons/svg/1703/1703143.svg"
-                  style="width:40px;height:30px;border-radius: 50%;"
-                >
-              </b-navbar-brand>
               <!--Modal-->
 
             </b-navbar-nav>
