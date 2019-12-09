@@ -1,7 +1,7 @@
 <template>
   <div class="views-login_view">
     <loading :active.sync="isLoading"></loading>
-    <!--  test-link -->
+    <!--  test-link
     <div class="a-test">
       <a
         @click="loginStatus = 'loginUser'"
@@ -68,6 +68,7 @@
         href="#"
       >loginSucess</a>
     </div>
+    -->
     <!-- main-->
     <div
       v-if="loginStatus !== 'loading'"
