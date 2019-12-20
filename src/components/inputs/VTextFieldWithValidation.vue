@@ -5,12 +5,12 @@
     v-slot="{ errors, valid }"
   >
     <v-text-field
-      v-model="innerValue"
+      v-model="_value"
       :error-messages="errors"
       :success="valid"
       v-bind="$attrs"
       v-on="$listeners"
-    ></v-text-field>
+    />
   </validation-provider>
 </template>
 
@@ -19,29 +19,22 @@ export default {
   props: {
     rules: {
       type: [Object, String],
-      default: ""
+      default: ''
     },
-    // must be included in props
     value: {
-      type: null
+      type: String,
+      default: ''
     }
+    // must be included in props
   },
-  data: () => ({
-    innerValue: ""
-  }),
-  watch: {
-    // Handles internal model changes.
-    innerValue(newVal) {
-      this.$emit("input", newVal)
-    },
-    // Handles external model changes.
-    value(newVal) {
-      this.innerValue = newVal
-    }
-  },
-  created() {
-    if (this.value) {
-      this.innerValue = this.value
+  computed: {
+    _value: {
+      get() {
+        return this.value
+      },
+      set(val) {
+        this.$emit('input', val)
+      }
     }
   }
 }

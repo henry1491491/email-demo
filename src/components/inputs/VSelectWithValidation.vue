@@ -17,7 +17,7 @@
     v-slot="{ errors, valid }"
   >
     <v-select
-      v-model="innerValue"
+      v-model="_value"
       :error-messages="errors"
       v-bind="$attrs"
       v-on="$listeners"
@@ -38,24 +38,15 @@ export default {
       type: null
     }
   },
-  data: () => ({
-    innerValue: ""
-  }),
-  watch: {
-    // Handles internal model changes.
-    innerValue(newVal) {
-      this.$emit("input", newVal)
-    },
-    // Handles external model changes.
-    value(newVal) {
-      this.innerValue = newVal
+  computed: {
+    _value: {
+      get() {
+        return this.value
+      },
+      set(val) {
+        this.$emit('input', val)
+      }
     }
-  },
-  created() {
-    if (this.value) {
-      this.innerValue = this.value
-    }
-    //console.log(this.$attrs)
   }
 }
 </script>
