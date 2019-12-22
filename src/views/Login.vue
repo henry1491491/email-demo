@@ -1,7 +1,7 @@
 <template>
   <v-container fill-height>
     <v-card
-      :max-width="400"
+      min-width="350"
       class="mx-auto"
       outlined
     >
@@ -15,27 +15,27 @@
         >
           <v-flex
             xs12
-            class="title text-center"
+            class="img-title text-center mb-2"
           >
             <img
               src="https://image.flaticon.com/icons/png/512/624/624497.png"
-              height="35px"
-              width="35px"
+              height="28px"
+              width="28px"
               class="mr-1"
             >
-            <span>榖鴿郵箱</span>
+            <span class="body-2">榖鴿郵箱</span>
           </v-flex>
           <v-flex
             xs12
             class="text-center"
           >
-            登入
+            <span class="title">登入</span>
           </v-flex>
           <v-flex
             xs12
             class="text-center"
           >
-            使用你的榖鴿帳戶登入
+            <span class="subtitle-1">使用你的榖鴿帳戶登入</span>
           </v-flex>
         </v-layout>
       </v-card-title>
@@ -57,32 +57,25 @@
             :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
             :type="showPassword ? 'text' : 'password'"
             @click:append="showPassword = !showPassword"
-            rules="required|min:6|max:6"
+            rules="required|min:6|max:12"
             label="密碼"
             outlined
             dense
           />
-          <v-btn
-            @click.prevent="clear('login')"
-            text
-            color="blue darken-1"
-            class="float-left"
-          >
-            清空
-          </v-btn>
-          <v-btn
-            @click.prevent="show.card='register'"
-            text
-            color="blue darken-1"
-            class="float-left"
-          >
-            註冊
-          </v-btn>
+          <router-link to="/register">
+            <v-btn
+              text
+              color="blue darken-1"
+              class="float-left ma-2"
+            >
+              註冊
+            </v-btn>
+          </router-link>
           <v-btn
             @click.prevent="passes(loginHandler)"
             :disabled="invalid || !validated"
             color="primary"
-            class="float-right"
+            class="float-right ma-2"
           >
             登入
           </v-btn>
@@ -94,19 +87,14 @@
 
 <script>
 export default {
-  name: 'LoginViews',
+  name: "Login",
   data() {
     return {
       showPassword: false,
       userLogin: {
-        email: '',
-        password: ''
-      },
-      genderOptions: [
-        { text: '男', value: 'male' },
-        { text: '女', value: 'female' },
-        { text: '不知道', value: 'unknow' }
-      ]
+        email: "",
+        password: ""
+      }
     }
   },
   methods: {
@@ -117,17 +105,7 @@ export default {
         return
       }
       this.userLogin = {}
-      this.$router.push('/dashboard')
-    },
-    async clear(cardtype) {
-      if (cardtype == 'register') {
-        this.userRegister = {}
-      } else if (cardtype == 'login') {
-        this.userLogin = {}
-      }
-      requestAnimationFrame(() => {
-        this.$refs.obs.reset()
-      })
+      this.$router.push("/dashboard")
     }
   }
 }

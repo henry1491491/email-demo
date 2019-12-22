@@ -28,14 +28,6 @@ extend("requireOneNumeric", {
   message: "{_field_} 至少需含一個數字"
 })
 
-extend("minmax", {
-  validate(value, { min, max }) {
-    return value.length >= min && value.length <= max
-  },
-  params: ["min", "max"],
-  message: "{_field_} 數字長度需介於{min}到{max}之間"
-})
-
 extend("password", {
   params: ["target"],
   // target 對應的是 label 名稱
