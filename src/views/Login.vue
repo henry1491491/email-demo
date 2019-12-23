@@ -62,15 +62,14 @@
             outlined
             dense
           />
-          <router-link to="/register">
-            <v-btn
-              text
-              color="blue darken-1"
-              class="float-left ma-2"
-            >
-              註冊
-            </v-btn>
-          </router-link>
+          <v-btn
+            @click="$router.push('/register')"
+            text
+            color="blue darken-1"
+            class="float-left ma-2"
+          >
+            註冊
+          </v-btn>
           <v-btn
             @click.prevent="passes(loginHandler)"
             :disabled="invalid || !validated"

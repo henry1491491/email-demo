@@ -11,6 +11,7 @@
       v-bind="$attrs"
       v-on="$listeners"
     />
+    <slot></slot>
   </validation-provider>
 </template>
 
@@ -19,11 +20,11 @@ export default {
   props: {
     rules: {
       type: [Object, String],
-      default: ''
+      default: ""
     },
     value: {
       type: String,
-      default: ''
+      default: ""
     }
     // must be included in props
   },
@@ -33,7 +34,7 @@ export default {
         return this.value
       },
       set(val) {
-        this.$emit('input', val)
+        this.$emit("input", val)
       }
     }
   }

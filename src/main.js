@@ -8,6 +8,8 @@ import VueAxios from "vue-axios"
 import moment from "vue-moment"
 //import VueMoment from "vue-moment"
 //import moment from "moment-timezone"
+import VSidebarItem from "@/components/listitems/VSidebarItem"
+import VMsgItem from "@/components/listitems/VMsgItem"
 import "@/assets/scss/custom.scss"
 import "@/plugins/validate"
 axios.defaults.withCredentials = true
@@ -17,6 +19,9 @@ Vue.prototype.$Moment = moment
 //Vue.use(require("vue-moment"))
 //Vue.use(VueMoment, {moment})
 Vue.config.productionTip = false
+
+Vue.component("VSidebarItem", VSidebarItem)
+Vue.component("VMsgItem", VMsgItem)
 
 new Vue({
   router,

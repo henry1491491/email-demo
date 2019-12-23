@@ -178,15 +178,14 @@
           >
             清空
           </v-btn>
-          <router-link to='/'>
-            <v-btn
-              text
-              color="blue darken-1"
-              class="float-left ma-2"
-            >
-              改為登入帳戶
-            </v-btn>
-          </router-link>
+          <v-btn
+            @click="$router.push('/')"
+            text
+            color="blue darken-1"
+            class="float-left ma-2"
+          >
+            改為登入帳戶
+          </v-btn>
           <v-btn
             @click.prevent="passes(register)"
             :disabled="invalid || !validated"
