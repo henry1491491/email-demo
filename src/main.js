@@ -5,23 +5,22 @@ import store from "./store"
 import vuetify from "@/plugins/vuetify"
 import axios from "axios"
 import VueAxios from "vue-axios"
-import moment from "vue-moment"
-//import VueMoment from "vue-moment"
-//import moment from "moment-timezone"
-import VSidebarItem from "@/components/listitems/VSidebarItem"
-import VMsgItem from "@/components/listitems/VMsgItem"
+import moment from "moment"
+import VMessageItem from "@/components/listitems/VMessageItem"
+
 import "@/assets/scss/custom.scss"
 import "@/plugins/validate"
-axios.defaults.withCredentials = true
+
+axios.defaults.withCredentials = false
+
 Vue.use(VueAxios, axios)
 Vue.use(moment)
-Vue.prototype.$Moment = moment
-//Vue.use(require("vue-moment"))
-//Vue.use(VueMoment, {moment})
+
 Vue.config.productionTip = false
 
-Vue.component("VSidebarItem", VSidebarItem)
-Vue.component("VMsgItem", VMsgItem)
+Vue.component("VMessageItem", VMessageItem)
+
+Vue.prototype.moment = moment
 
 new Vue({
   router,

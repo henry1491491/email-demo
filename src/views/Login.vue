@@ -71,8 +71,8 @@
             註冊
           </v-btn>
           <v-btn
-            @click.prevent="passes(loginHandler)"
             :disabled="invalid || !validated"
+            @click.prevent="passes(loginHandler)"
             color="primary"
             class="float-right ma-2"
           >

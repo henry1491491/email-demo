@@ -1,8 +1,8 @@
 <template>
   <validation-provider
+    v-slot="{ errors, valid }"
     :name="$attrs.label"
     :rules="rules"
-    v-slot="{ errors, valid }"
   >
     <v-text-field
       v-model="_value"

@@ -85,10 +85,10 @@
                 <template v-slot:activator="{ on }">
                   <v-text-field
                     v-model="userRegister.birthday"
+                    v-on="on"
                     prepend-icon="mdi-calendar"
                     label="出生日期"
                     readonly
-                    v-on="on"
                     outlined
                     dense
                   ></v-text-field>
@@ -100,9 +100,9 @@
                 >
                   <v-spacer></v-spacer>
                   <v-btn
+                    @click="$refs.startMenu.save(userRegister.birthday)"
                     text
                     color="primary"
-                    @click="$refs.startMenu.save(userRegister.birthday)"
                   >
                     OK
                   </v-btn>
@@ -117,8 +117,8 @@
             >
               <v-select-with-validation
                 v-model="userRegister.gender"
-                rules="required"
                 :items="genderOptions"
+                rules="required"
                 label="性別"
                 outlined
                 dense
@@ -143,12 +143,12 @@
               class="py-0 px-2"
             >
               <v-text-field-with-validation
+                ref="password"
                 v-model="userRegister.password"
                 :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
                 :type="showPassword ? 'text' : 'password'"
                 @click:append="showPassword = !showPassword"
                 rules="required|min:6|max:12|requireOneNumeric"
-                ref="password"
                 label="密碼"
                 outlined
                 dense
@@ -187,8 +187,8 @@
             改為登入帳戶
           </v-btn>
           <v-btn
-            @click.prevent="passes(register)"
             :disabled="invalid || !validated"
+            @click.prevent="passes(register)"
             color="primary"
             class="float-right  ma-2"
           >
