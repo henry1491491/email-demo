@@ -22,7 +22,7 @@
           <v-list-item-title v-text="itemTitle" />
           <v-list-item-title v-text="itemContent" />
           <v-list-item-title
-            v-html="moment(itemTime).format('MM月DD日')"
+            v-html="moment(itemTime).format('MM-DD')"
             class="text-right"
           />
         </div>

@@ -70,24 +70,18 @@
 
             <v-card>
               <v-toolbar
-                color="blue-grey"
+                color="primary"
                 dark
                 dense
                 flat
               >
-                <v-toolbar-title class="text-left">新郵件</v-toolbar-title>
+                <v-toolbar-title class="
+                text-left">新郵件</v-toolbar-title>
 
                 <v-spacer />
 
                 <v-icon
-                  v-text="'mdi-minus-circle-outline'"
-                  class="mr-1"
-                />
-                <v-icon
-                  v-text="'mdi-arrow-expand'"
-                  class="mr-1"
-                />
-                <v-icon
+                  @click="dialog = false"
                   v-text="'mdi-close-circle-outline'"
                   class="mr-1"
                 />
@@ -111,7 +105,10 @@
                     outlined
                     dense
                   />
-                  <v-textarea v-model="message.content" />
+                  <v-textarea
+                    v-model="message.content"
+                    outlined
+                  />
                 </v-card-text>
 
                 <v-divider />
@@ -141,9 +138,10 @@
                     v-text="'mdi-image'"
                     class="mr-1"
                   />
-
-                  <v-spacer />
-
+                  <v-divider
+                    vertical
+                    class="mr-2"
+                  />
                   <v-icon
                     v-text="'mdi-dots-vertical'"
                     class="mr-1"
@@ -447,8 +445,10 @@ export default {
         "https://next.json-generator.com/api/json/get/Vyc5O-JkO"
       )
       if (!result) {
+        this.dialog = false
         return
       }
+      this.dialog = false
       this.getMessageItems()
     },
     async getSidebarItems() {
