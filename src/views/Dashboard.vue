@@ -58,11 +58,11 @@
           >
             <template v-slot:activator="{ on }">
               <v-btn
-                v-on="on"
                 block
                 color="primary"
                 dark
                 text
+                v-on="on"
               >
                 撰寫
               </v-btn>
@@ -82,8 +82,8 @@
 
                 <v-icon
                   @click="dialog = false"
-                  v-text="'mdi-close-circle-outline'"
                   class="mr-1"
+                  v-text="'mdi-close-circle-outline'"
                 />
               </v-toolbar>
 
@@ -115,40 +115,40 @@
 
                 <v-card-actions>
                   <v-btn
-                    @click.prevent="handleSubmit(sendEmail)"
-                    v-text="'傳送'"
+                    @click.prevent="handleSubmit(postSendEmailData)"
                     color="primary"
+                    v-text="'傳送'"
                   />
 
                   <v-spacer />
 
                   <v-icon
+                    class="mr-1"
                     v-text="'mdi-link'"
-                    class="mr-1"
                   />
                   <v-icon
+                    class="mr-1"
                     v-text="'mdi-emoticon-excited-outline'"
-                    class="mr-1"
                   />
                   <v-icon
+                    class="mr-1"
                     v-text="'mdi-google-drive'"
-                    class="mr-1"
                   />
                   <v-icon
-                    v-text="'mdi-image'"
                     class="mr-1"
+                    v-text="'mdi-image'"
                   />
                   <v-divider
                     vertical
                     class="mr-2"
                   />
                   <v-icon
-                    v-text="'mdi-dots-vertical'"
                     class="mr-1"
+                    v-text="'mdi-dots-vertical'"
                   />
                   <v-icon
-                    v-text="'mdi-delete'"
                     class="mr-1"
+                    v-text="'mdi-delete'"
                   />
                 </v-card-actions>
               </validation-observer>
@@ -166,7 +166,7 @@
           :key="item.title"
           :prepend-icon="item.action"
           :append-icon="item.title == '類別'?'mdi-chevron-down':''"
-          @click="sidebarItemHandler(item)"
+          @click="onSidebarItemHandler(item)"
           no-action
         >
           <template v-slot:activator>
@@ -175,8 +175,8 @@
                 <v-list-item-title v-text="item.title" />
                 <v-list-item-title
                   v-show="item.number > 0"
-                  v-text="item.number"
                   class="text-right"
+                  v-text="item.number"
                 />
               </div>
             </v-list-item-content>
@@ -184,15 +184,15 @@
           <v-list-item
             v-for="subItem in item.items"
             :key="subItem.title"
-            @click="sidebarItemHandler(item)"
+            @click="onSidebarItemHandler(item)"
           >
             <v-list-item-content>
               <div class="d-flex">
                 <v-list-item-title v-text="subItem.title" />
                 <v-list-item-title
                   v-show="subItem.number > 0"
-                  v-text="subItem.number"
                   class="text-right"
+                  v-text="subItem.number"
                 />
               </div>
             </v-list-item-content>
@@ -226,16 +226,16 @@
             />
             <v-icon v-text="'mdi-menu-down'" />
             <v-icon
+              class="mr-1"
               v-text="'mdi-archive-arrow-down-outline'"
-              class="mr-1"
             />
             <v-icon
+              class="mr-1"
               v-text="'mdi-delete-outline'"
-              class="mr-1"
             />
             <v-icon
+              class="mr-1"
               v-text="'mdi-delete'"
-              class="mr-1"
             />
             <v-divider
               vertical
@@ -243,12 +243,12 @@
               inset
             />
             <v-icon
+              class="mr-1"
               v-text="'mdi-email-open-multiple'"
-              class="mr-1"
             />
             <v-icon
-              v-text="'mdi-clock'"
               class="mr-1"
+              v-text="'mdi-clock'"
             />
             <v-divider
               vertical
@@ -256,16 +256,16 @@
               inset
             />
             <v-icon
+              class="mr-1"
               v-text="'mdi-folder-move'"
-              class="mr-1"
             />
             <v-icon
+              class="mr-1"
               v-text="'mdi-tag'"
-              class="mr-1"
             />
             <v-icon
-              v-text="'mdi-dots-vertical'"
               class="mr-1"
+              v-text="'mdi-dots-vertical'"
             />
           </v-toolbar-items>
 
@@ -273,46 +273,46 @@
 
           <span class="caption">1-50 列(共 1,884 列)</span>
           <v-icon
+            class="mr-1"
             v-text="'mdi-chevron-left'"
-            class="mr-1"
           />
           <v-icon
+            class="mr-1"
             v-text="'mdi-chevron-right'"
-            class="mr-1"
           />
           <v-icon
+            class="mr-1"
             v-text="'mdi-keyboard'"
-            class="mr-1"
           />
           <v-icon
+            class="mr-1"
             v-text="'mdi-menu-down'"
-            class="mr-1"
           />
           <v-icon
-            v-text="'mdi-settings'"
             class="mr-1"
+            v-text="'mdi-settings'"
           />
         </v-toolbar>
         <!-- tabs -->
         <v-tabs>
           <v-tab>
             <v-icon
-              v-text="'mdi-inbox'"
               class="mr-2"
+              v-text="'mdi-inbox'"
             />
             <span>主要</span>
           </v-tab>
           <v-tab>
             <v-icon
-              v-text="'mdi-account-multiple-outline'"
               class="mr-2"
+              v-text="'mdi-account-multiple-outline'"
             />
             <span>社交網路</span>
           </v-tab>
           <v-tab>
             <v-icon
-              v-text="'mdi-tag'"
               class="mr-2"
+              v-text="'mdi-tag'"
             />
             <span>促銷內容</span>
           </v-tab>
@@ -327,29 +327,28 @@
             :item-title="item.title"
             :item-content="item.content"
             :item-time="item.time"
-            v-on:isSelected="selectedItem($event)"
+            v-on:isSelected="onMessageItemCheckbox($event)"
           />
         </v-list>
       </div>
     </v-content>
 
     <v-footer>
-      <v-spacer></v-spacer>
-      <div> &copy;{{ moment(new Date()).format('YYYY-MM-DD')  }}</div>
-
+      <v-spacer />
+      <div> &copy;{{ footerTime  }}</div>
     </v-footer>
   </div>
 </template>
 
 <script>
 export default {
-  name: "Dahboard",
+  name: "Dashboard",
   data() {
     return {
       drawer: null,
       dialog: false,
       showMoreItems: false,
-      footerYear: "",
+      footerTime: "",
       iconsToolbar: {
         checkbox: false
       },
@@ -378,7 +377,15 @@ export default {
       }
     },
     filterMessageItems() {
+      let items = []
+      this.sidebarItems[0].forEach(i => {
+        items.push({ item: { title: i.title } })
+        return items
+      })
+
+      console.log(items)
       let item = this.filterItem
+
       if (item == "全部" || item == "所有郵件") {
         return this.messageItems[0]
       }
@@ -402,19 +409,29 @@ export default {
       } else if (item == "垃圾郵件") {
         return this.messageItems[0].filter(i => i.isDraft === true)
       }
+
       return this.messageItems[0]
     }
   },
+  created() {
+    this.creatId()
+    this.getSidebarData()
+    this.getMessageData()
+    this.getMomentTime()
+  },
   methods: {
-    async selectedItem(e) {
-      if (e.status === true) {
-        this.isSelect.push(e)
+    async getMomentTime() {
+      let now = new Date().getTime()
+      this.footerTime = this.moment(now).format("YYYY-MM-DD")
+    },
+    async onMessageItemCheckbox(item) {
+      if (item.status === true) {
+        this.isSelect.push(item)
       } else {
         this.isSelect.splice(0, 1)
       }
-      console.log(this.isSelect)
     },
-    async sidebarItemHandler(item) {
+    async onSidebarItemHandler(item) {
       this.filterItem = item.title
     },
     async creatId() {
@@ -423,7 +440,7 @@ export default {
       this.message.id = timestamp
       return this.message.id
     },
-    async sendEmail() {
+    async postSendEmailData() {
       let id = this.creatId()
       let data = {
         id: id,
@@ -449,9 +466,9 @@ export default {
         return
       }
       this.dialog = false
-      this.getMessageItems()
+      this.getMessageData()
     },
-    async getSidebarItems() {
+    async getSidebarData() {
       let result = await this.axios.get(
         "https://next.json-generator.com/api/json/get/Nk6iFFry_"
       )
@@ -461,7 +478,7 @@ export default {
       result = JSON.parse(JSON.stringify(result.data))
       this.sidebarItems.push(result)
     },
-    async getMessageItems() {
+    async getMessageData() {
       let result
       result = await this.axios.get(
         "https://next.json-generator.com/api/json/get/Vyc5O-JkO"
@@ -472,13 +489,6 @@ export default {
       result = JSON.parse(JSON.stringify(result.data))
       this.messageItems.push(result)
     }
-  },
-  created() {
-    this.getSidebarItems()
-    this.getMessageItems()
-    let now = new Date().getTime()
-    let m = this.moment(now).format("YYYY")
-    this.footerYear = m
   }
 }
 </script>

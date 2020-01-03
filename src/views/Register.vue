@@ -85,24 +85,24 @@
                 <template v-slot:activator="{ on }">
                   <v-text-field
                     v-model="userRegister.birthday"
-                    v-on="on"
                     prepend-icon="mdi-calendar"
                     label="出生日期"
                     readonly
                     outlined
                     dense
-                  ></v-text-field>
+                    v-on="on"
+                  />
                 </template>
                 <v-date-picker
                   v-model="userRegister.birthday"
                   no-title
                   scrollable
                 >
-                  <v-spacer></v-spacer>
+                  <v-spacer />
                   <v-btn
-                    @click="$refs.startMenu.save(userRegister.birthday)"
                     text
                     color="primary"
+                    @click="$refs.startMenu.save(userRegister.birthday)"
                   >
                     OK
                   </v-btn>
@@ -147,11 +147,11 @@
                 v-model="userRegister.password"
                 :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
                 :type="showPassword ? 'text' : 'password'"
-                @click:append="showPassword = !showPassword"
                 rules="required|min:6|max:12|requireOneNumeric"
                 label="密碼"
                 outlined
                 dense
+                @click:append="showPassword = !showPassword"
               />
             </v-flex>
             <v-flex
@@ -162,35 +162,35 @@
                 v-model="userRegister.passwordConfirm"
                 :append-icon="showPasswordConfirm ? 'mdi-eye' : 'mdi-eye-off'"
                 :type="showPasswordConfirm ? 'text' : 'password'"
-                @click:append="showPasswordConfirm = !showPasswordConfirm"
                 rules="required|min:6|max:12|confirmed:密碼"
                 label="密碼確認"
                 outlined
                 dense
+                @click:append="showPasswordConfirm = !showPasswordConfirm"
               />
             </v-flex>
           </v-layout>
           <v-btn
-            @click.prevent="clear"
             text
             color="blue darken-1"
             class="float-left ma-2"
+            @click.prevent="clear"
           >
             清空
           </v-btn>
           <v-btn
-            @click="$router.push('/')"
             text
             color="blue darken-1"
             class="float-left ma-2"
+            @click="$router.push('/')"
           >
             改為登入帳戶
           </v-btn>
           <v-btn
-            :disabled="invalid || !validated"
-            @click.prevent="passes(register)"
             color="primary"
             class="float-right  ma-2"
+            :disabled="invalid || !validated"
+            @click.prevent="passes(register)"
           >
             送出
           </v-btn>

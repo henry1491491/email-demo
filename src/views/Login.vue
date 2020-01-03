@@ -56,25 +56,25 @@
             v-model="userLogin.password"
             :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
             :type="showPassword ? 'text' : 'password'"
-            @click:append="showPassword = !showPassword"
             rules="required|min:6|max:12"
             label="密碼"
             outlined
             dense
+            @click:append="showPassword = !showPassword"
           />
           <v-btn
-            @click="$router.push('/register')"
             text
             color="blue darken-1"
             class="float-left ma-2"
+            @click="$router.push('/register')"
           >
             註冊
           </v-btn>
           <v-btn
             :disabled="invalid || !validated"
-            @click.prevent="passes(loginHandler)"
             color="primary"
             class="float-right ma-2"
+            @click.prevent="passes(loginHandler)"
           >
             登入
           </v-btn>

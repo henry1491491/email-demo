@@ -4,9 +4,9 @@
       <v-list-item-icon>
         <slot name="prepend-icon">
           <v-icon
+            class="mr-1"
             @click="selectMessageItem();iconWithSelectMessage = !iconWithSelectMessage"
             v-text="iconWithSelectMessage?'mdi-check-box-outline':'mdi-checkbox-blank-outline'"
-            class="mr-1"
           />
           <v-icon
             :color="iconWithStarMessage?'yellow accent-4':'grey'"
@@ -22,8 +22,8 @@
           <v-list-item-title v-text="itemTitle" />
           <v-list-item-title v-text="itemContent" />
           <v-list-item-title
-            v-html="moment(itemTime).format('MM-DD')"
             class="text-right"
+            v-html="moment(itemTime).format('MM-DD')"
           />
         </div>
       </v-list-item-content>
@@ -32,10 +32,10 @@
         <v-tooltip top>
           <template v-slot:activator="{ on }">
             <v-icon
+              class="mr-1"
               @click="archiveMessageItem"
               v-on="on"
               v-text="'mdi-archive-arrow-down-outline'"
-              class="mr-1"
             />
           </template>
           <span>封存</span>
@@ -43,10 +43,10 @@
         <v-tooltip top>
           <template v-slot:activator="{ on }">
             <v-icon
+              class="mr-1"
               @click="deleteMessageItem"
               v-on="on"
               v-text="'mdi-delete-outline'"
-              class="mr-1"
             />
           </template>
           <span>刪除</span>
@@ -54,10 +54,10 @@
         <v-tooltip top>
           <template v-slot:activator="{ on }">
             <v-icon
+              class="mr-1"
               @click="readMessageItem"
               v-on="on"
               v-text="'mdi-email-open'"
-              class="mr-1"
             />
           </template>
           <span>標示為已讀取</span>
@@ -65,10 +65,10 @@
         <v-tooltip top>
           <template v-slot:activator="{ on }">
             <v-icon
+              class="mr-1"
               @click="postponeMessageItem"
               v-on="on"
               v-text="'mdi-clock'"
-              class="mr-1"
             />
           </template>
           <span>延後</span>
