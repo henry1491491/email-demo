@@ -2,38 +2,36 @@
   <v-list-item-group>
     <v-list-item inactive>
       <v-list-item-icon>
-        <slot name="prepend-icon">
-          <v-icon
-            class="mr-1"
-            @click="selectMessageItem();iconWithSelectMessage = !iconWithSelectMessage"
-            v-text="iconWithSelectMessage?'mdi-check-box-outline':'mdi-checkbox-blank-outline'"
-          />
-          <v-icon
-            :color="iconWithStarMessage?'yellow accent-4':'grey'"
-            @click="starMessageItem();iconWithStarMessage =!iconWithStarMessage"
-            v-text="iconWithStarMessage?'mdi-star':'mdi-star-outline'"
-          />
-        </slot>
+        <v-icon
+          class="mr-1"
+          @click="onCheckMsgItem(msgItem.isCheckbox)"
+          v-text="msgItem.isCheckbox ? 'mdi-check-box-outline' : 'mdi-checkbox-blank-outline'"
+        />
+        <v-icon
+          :color="msgItem.isStar ? 'yellow accent-4' : 'grey'"
+          @click="onStarMsgItem(msgItem.isStar)"
+          v-text="msgItem.isStar ? 'mdi-star' : 'mdi-star-outline'"
+        />
       </v-list-item-icon>
-
-      <v-list-item-content>
-        <div class="d-flex justify-between">
-          <v-list-item-title v-text="itemSender" />
-          <v-list-item-title v-text="itemTitle" />
-          <v-list-item-title v-text="itemContent" />
-          <v-list-item-title
-            class="text-right"
-            v-html="moment(itemTime).format('MM-DD')"
-          />
-        </div>
-      </v-list-item-content>
-
+      <slot name="content">
+        <v-list-item-content>
+          <div class="d-flex justify-between">
+            <v-list-item-title v-text="msgItem.sender" />
+            <v-list-item-title v-text="msgItem.title" />
+            <v-list-item-title v-text="msgItem.content" />
+            <v-list-item-title
+              class="text-right"
+              v-html="moment(msgItem.time).format('MM-DD')"
+            />
+          </div>
+        </v-list-item-content>
+      </slot>
       <v-list-item-icon class="message-append-icons">
         <v-tooltip top>
           <template v-slot:activator="{ on }">
             <v-icon
               class="mr-1"
-              @click="archiveMessageItem"
+              @click="onMessageItemArchive()"
               v-on="on"
               v-text="'mdi-archive-arrow-down-outline'"
             />
@@ -44,7 +42,7 @@
           <template v-slot:activator="{ on }">
             <v-icon
               class="mr-1"
-              @click="deleteMessageItem"
+              @click="onMessageItemDelete()"
               v-on="on"
               v-text="'mdi-delete-outline'"
             />
@@ -55,7 +53,7 @@
           <template v-slot:activator="{ on }">
             <v-icon
               class="mr-1"
-              @click="readMessageItem"
+              @click="onMessageItemRead()"
               v-on="on"
               v-text="'mdi-email-open'"
             />
@@ -66,7 +64,7 @@
           <template v-slot:activator="{ on }">
             <v-icon
               class="mr-1"
-              @click="postponeMessageItem"
+              @click="onMessageItemPostpone()"
               v-on="on"
               v-text="'mdi-clock'"
             />
@@ -74,7 +72,6 @@
           <span>延後</span>
         </v-tooltip>
       </v-list-item-icon>
-
     </v-list-item>
     <v-divider />
   </v-list-item-group>
@@ -83,55 +80,50 @@
 <script>
 export default {
   name: "VMessageItem",
-
   props: {
-    item: { type: Object },
-    itemSender: { type: String },
-    itemTitle: { type: String },
-    itemContent: { type: String },
-    itemTime: { type: String }
+    msgItem: { type: Object }
   },
   data() {
     return {
-      color: "blue-grey darken-1",
-      iconWithSelectMessage: false,
-      iconWithStarMessage: false
+      propsMsgItem: this.msgItem,
+      color: "blue-grey darken-1"
     }
   },
   methods: {
-    async selectMessageItem() {
-      if (this.iconWithSelectMessage === false) {
-        this.$emit("isSelected", { status: true })
-      } else if (this.iconWithSelectMessage === true) {
-        this.$emit("isSelected", { status: false })
+    /**
+     * 勾選訊息，並通知各篩選頁面
+     * 問題：checkbox 狀態是否需要 call api
+     * @param b true, false
+     */
+    async onCheckMsgItem(b) {
+      let status
+      if (b === false) {
+        this.propsMsgItem.isCheckbox = true
+        eventBus.$emit("check-item", { status: b })
+      } else {
+        this.propsMsgItem.isCheckbox = false
+        eventBus.$emit("check-item", { status: b })
       }
     },
-    async starMessageItem() {},
-    async archiveMessageItem() {
-      let result
-      this.item.isArchive = true
-      result = await this.axios.get(
-        "https://next.json-generator.com/api/json/get/Vyc5O-JkO"
-      )
-      // 這邊把 { isArchive : true } put 出去
-      if (!result) {
-        return
+    /**
+     * 加上星號，並通知各篩選頁面
+     * 問題：是否先 call api，然後才改變畫面，這樣一來是否 call 完再通知回此組件去改變畫面
+     * @param b true, false
+     */
+    async onStarMsgItem(b) {
+      let status
+      if (b === false) {
+        this.propsMsgItem.isStar = true
+        eventBus.$emit("star-item", { status: b })
+      } else {
+        this.propsMsgItem.isStar = false
+        eventBus.$emit("star-item", { status: b })
       }
     },
-    async deleteMessageItem() {
-      let result
-      this.item.isDelete = true
-      result = await this.axios.get(
-        "https://next.json-generator.com/api/json/get/Vyc5O-JkO"
-      )
-      if (!result) {
-        return
-      }
-    },
-    async readMessageItem() {},
-    async postponeMessageItem() {}
+    async onMessageItemArchive(b) {},
+    async onMessageItemDelete(b) {},
+    async onMessageItemRead(b) {},
+    async onMessageItemPostpone(b) {}
   }
 }
 </script>
-<style lang="scss">
-</style>
