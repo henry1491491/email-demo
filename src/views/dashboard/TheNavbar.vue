@@ -43,6 +43,7 @@
         </v-avatar>
       </v-btn>
     </v-app-bar>
+
     <v-navigation-drawer
       v-model="drawer"
       app
@@ -58,7 +59,7 @@
             <template v-slot:activator="{ on }">
               <v-btn
                 block
-                color="primary"
+                color="blue"
                 dark
                 text
                 v-on="on"
@@ -69,7 +70,7 @@
 
             <v-card>
               <v-toolbar
-                color="primary"
+                color="blue"
                 dark
                 dense
                 flat
@@ -116,42 +117,57 @@
                 <v-card-actions>
                   <v-btn
                     @click.prevent="handleSubmit(postSendEmailData)"
-                    color="primary"
+                    color="blue"
                     v-text="'傳送'"
                   />
 
                   <v-spacer />
-
-                  <v-icon
+                  <v-btn
+                    icon
+                    small
                     class="mr-1"
-                    v-text="'mdi-link'"
-                  />
-                  <v-icon
+                  >
+                    <v-icon v-text="'mdi-link'" />
+                  </v-btn>
+                  <v-btn
+                    icon
+                    small
                     class="mr-1"
-                    v-text="'mdi-emoticon-excited-outline'"
-                  />
-                  <v-icon
+                  >
+                    <v-icon v-text="'mdi-emoticon-excited-outline'" />
+                  </v-btn>
+                  <v-btn
+                    icon
+                    small
                     class="mr-1"
-                    v-text="'mdi-google-drive'"
-                  />
-                  <v-icon
+                  >
+                    <v-icon v-text="'mdi-google-drive'" />
+                  </v-btn>
+                  <v-btn
+                    icon
+                    small
                     class="mr-1"
-                    v-text="'mdi-image'"
-                  />
-
+                  >
+                    <v-icon v-text="'mdi-image'" />
+                  </v-btn>
                   <v-divider
                     vertical
-                    class="mr-2"
-                  />
-
-                  <v-icon
                     class="mr-1"
-                    v-text="'mdi-dots-vertical'"
                   />
-                  <v-icon
+                  <v-btn
+                    icon
+                    small
                     class="mr-1"
-                    v-text="'mdi-delete'"
-                  />
+                  >
+                    <v-icon v-text="'mdi-dots-vertical'" />
+                  </v-btn>
+                  <v-btn
+                    icon
+                    small
+                    class="mr-1"
+                  >
+                    <v-icon v-text="'mdi-delete'" />
+                  </v-btn>
                 </v-card-actions>
               </validation-observer>
             </v-card>
@@ -167,9 +183,9 @@
           v-model="item.active"
           :key="item.title"
           :prepend-icon="item.action"
-          :append-icon="item.title == '類別' ? 'mdi-chevron-down' : ''"
-          @click="onSidebarItemHandler(item)"
+          :append-icon="item.title === '類別' ? 'mdi-chevron-down' : ''"
           no-action
+          @click="onSidebarItemHandler(item)"
         >
           <template v-slot:activator>
             <v-list-item-content>
@@ -206,11 +222,14 @@
 </template>
 
 <script>
+import {
+  apiGetSidebarData,
+  apiPostMsg,
+  apiPostDraftData
+} from "../../plugins/api"
+
 export default {
   name: "TheNavbar",
-  props: {
-    actions: { type: String, default: "1" }
-  },
   data() {
     return {
       drawer: null,
@@ -223,8 +242,7 @@ export default {
       },
       userName: "小明",
       active: [],
-      sidebarData: [],
-      actionProps: this.actions
+      sidebarData: []
     }
   },
   computed: {
@@ -238,6 +256,7 @@ export default {
         if (el.parent === "tags") {
           sidebarItemSub = {
             id: el.id,
+            name: el.name,
             action: el.action,
             title: el.title,
             number: el.number,
@@ -247,6 +266,7 @@ export default {
         } else if (el.children === "tags") {
           sidebarItem = {
             id: el.id,
+            name: el.name,
             action: el.action,
             title: el.title,
             number: el.number,
@@ -257,6 +277,7 @@ export default {
         } else {
           sidebarItem = {
             id: el.id,
+            name: el.name,
             action: el.action,
             title: el.title,
             number: el.number
@@ -272,35 +293,46 @@ export default {
     this.getMomentTime()
   },
   methods: {
-    async postDraftData() {
-      /*
-      let result
-      result = await this.axios.post('')
-      */
-    },
     async onCloseDialog() {
-      let result = await this.postDraftData()
-      if (!result) {
-        return
-      }
       this.dialog = false
+
+      let result = await this.postDraftData()
+      if (result) {
+        this.dialog = false
+      }
+    },
+    async postDraftData() {
+      let draftData = {
+        id: this.message.id,
+        recipient: this.message.recipient,
+        title: this.message.title,
+        content: this.message.content
+      }
+      apiPostDraftData()
     },
     async onSidebarItemHandler(item) {
-      this.actionProps = item.id.toString()
-      this.$emit("sidebaractions", { id: item.id })
+      if (item.name === "inbox") {
+        this.$router.push("/dashboard")
+      } else if (item.name === "category") {
+        return
+      } else if (
+        item.name === "social" ||
+        item.name === "forum" ||
+        item.name === "sales" ||
+        item.name === "news"
+      ) {
+        this.$router.push(`/category/${item.name}`)
+      } else {
+        this.$router.push(`/${item.name}`)
+      }
     },
     async getMomentTime() {
       let now = new Date().getTime()
       this.footerTime = this.moment(now).format("YYYY-MM-DD")
     },
     async getSidebarData() {
-      let result = await this.axios.get(
-        "https://next.json-generator.com/api/json/get/Nk6iFFry_"
-      )
-      if (!result) {
-        return
-      }
-      this.sidebarData = JSON.parse(JSON.stringify(result.data))
+      let result = await apiGetSidebarData()
+      this.sidebarData = result.data
     },
     async creatId() {
       let dateTime = new Date()
@@ -325,9 +357,7 @@ export default {
         time: time
       }
       let result
-      result = await this.axios.get(
-        "https://next.json-generator.com/api/json/get/Vyc5O-JkO"
-      )
+      result = await apiPostMsg()
       if (!result) {
         this.dialog = false
         return

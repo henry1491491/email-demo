@@ -5,24 +5,15 @@
       flat
     >
       <v-toolbar-items>
-        <v-icon
-          v-show="checkStatus === 'none'"
-          @click="onCheckAll('none')"
-          v-text="'mdi-checkbox-blank-outline'"
-        />
-        <v-icon
-          v-show="checkStatus === 'all'"
-          @click="onCheckAll('all')"
-          v-text="'mdi-check-box-outline'"
-        />
-        <v-icon
-          v-show="checkStatus === 'part'"
-          @click="onCheckAll('part')"
-          v-text="'mdi-minus-box'"
-        />
-        <!--divider-->
-        <!--menu of menudown-->
-
+        <v-btn
+          icon
+          small
+        >
+          <v-icon
+            @click="onTagMultipleItemHandler(showCheckStatus)"
+            v-text="showIcons"
+          />
+        </v-btn>
         <v-menu
           bottom
           offset-x
@@ -40,7 +31,7 @@
             <v-list-item
               v-for="(item, i) in checkboxList"
               :key="i"
-              @click=""
+              @click="onChooseCheckItems(item.title)"
             >
               <v-list-item-title v-text="item.title" />
             </v-list-item>
@@ -48,64 +39,109 @@
         </v-menu>
 
         <div
-          v-if="checkStatus === 'none'"
+          v-if="showCheckStatus === 'none'"
           class="d-flex align-center"
         >
-          <v-icon
-            class="mr-2"
-            v-text="'mdi-reload'"
-          />
-          <v-icon
-            class="mr-2"
-            v-text="'mdi-dots-vertical'"
-          />
+          <v-btn
+            icon
+            small
+            class="mr-1"
+          >
+            <v-icon v-text="'mdi-reload'" />
+          </v-btn>
+          <v-btn
+            icon
+            small
+            class="mr-1"
+          >
+            <v-icon v-text="'mdi-dots-vertical'" />
+          </v-btn>
         </div>
         <div
-          v-if="checkStatus === 'all' || checkStatus === 'part'"
+          v-if="showCheckStatus === 'all' || showCheckStatus === 'part'"
           class="d-flex align-center"
         >
-          <v-icon
-            class="mr-2"
-            v-text="'mdi-archive-arrow-down-outline'"
-          />
-          <v-icon
-            class="mr-2"
-            v-text="'mdi-delete-outline'"
-          />
-          <v-icon
-            class="mr-2"
-            v-text="'mdi-delete'"
-          />
+          <v-btn
+            icon
+            small
+            class="mr-1"
+          >
+            <v-icon
+              @click="onTagMultipleItemHandler('archive')"
+              v-text="'mdi-archive-arrow-down-outline'"
+            />
+          </v-btn>
+          <v-btn
+            icon
+            small
+            class="mr-1"
+          >
+            <v-icon
+              @click="onTagMultipleItemHandler('deletemail')"
+              v-text="'mdi-alert-circle'"
+            />
+          </v-btn>
+          <v-btn
+            icon
+            small
+            class="mr-1"
+          >
+            <v-icon
+              @click="onTagMultipleItemHandler('delete')"
+              v-text="'mdi-delete'"
+            />
+          </v-btn>
           <v-divider
             vertical
-            class="mr-2"
+            class="mr-1"
             inset
           />
-          <v-icon
-            class="mr-2"
-            v-text="'mdi-email-open-multiple'"
-          />
-          <v-icon
-            class="mr-2"
-            v-text="'mdi-clock'"
-          />
+          <v-btn
+            icon
+            small
+            class="mr-1"
+          >
+            <v-icon
+              @click="onTagMultipleItemHandler('read')"
+              v-text="'mdi-email-open-multiple'"
+            />
+          </v-btn>
+          <v-btn
+            icon
+            small
+            class="mr-1"
+          >
+            <v-icon
+              @click="onTagMultipleItemHandler('postpone')"
+              v-text="'mdi-clock'"
+            />
+          </v-btn>
           <v-divider
             vertical
-            class="mr-2"
+            class="mr-1"
             inset
           />
-          <v-icon
-            class="mr-2"
-            v-text="'mdi-folder-move'"
-          />
-          <v-icon
-            class="mr-2"
-            v-text="'mdi-tag'"
-          />
-          <v-icon
-            class="mr-2"
-            v-text="'mdi-dots-vertical'"
-          />
+          <v-btn
+            icon
+            small
+            class="mr-1"
+          >
+            <v-icon v-text="'mdi-folder-move'" />
+          </v-btn>
+          <v-btn
+            icon
+            small
+            class="mr-1"
+          >
+            <v-icon v-text="'mdi-tag'" />
+          </v-btn>
+          <v-btn
+            icon
+            small
+            class="mr-1"
+          >
+            <v-icon v-text="'mdi-dots-vertical'" />
+          </v-btn>
         </div>
       </v-toolbar-items>
 
@@ -115,28 +151,54 @@
         class="caption"
         v-text="showPageStatus"
       ></span>
-
-      <v-icon
-        class="mr-4"
-        @click="getPageMsgData('left')"
-        v-text="'mdi-chevron-left'"
-      />
-      <v-icon
-        class="mr-2"
-        @click="getPageMsgData('right')"
-        v-text="'mdi-chevron-right'"
-      />
-
-      <v-icon v-text="'mdi-keyboard'" />
-      <v-icon
-        class="check-menu-down mr-2"
-        v-text="'mdi-menu-down'"
-      />
-      <v-icon
-        class="mr-2"
-        v-text="'mdi-settings'"
-      />
+      <v-btn
+        icon
+        small
+        class="mr-1"
+      >
+        <v-icon
+          @click="getMsgData(-1)"
+          v-text="'mdi-chevron-left'"
+        />
+      </v-btn>
+      <v-btn
+        icon
+        small
+        class="mr-1"
+      >
+        <v-icon
+          @click="getMsgData(1)"
+          v-text="'mdi-chevron-right'"
+        />
+      </v-btn>
+      <!--
+      <v-btn
+        icon
+        small
+        class="mr-1"
+      >
+        <v-icon v-text="'mdi-keyboard'" />
+      </v-btn>
+      <v-btn
+        icon
+        small
+        class="mr-1"
+      >
+        <v-icon
+          class="check-menu-down mr-2"
+          v-text="'mdi-menu-down'"
+        />
+      </v-btn>
+      -->
+      <v-btn
+        icon
+        small
+        class="mr-1"
+      >
+        <v-icon v-text="'mdi-settings'" />
+      </v-btn>
     </v-toolbar>
+    <v-divider />
   </div>
 </template>
 
@@ -144,84 +206,75 @@
 export default {
   name: "VMessageToolbar",
   props: {
-    msgItems: { type: Array }
+    msgItems: { type: Array },
+    msgItem: { type: Object }
   },
   data() {
     return {
-      propsItem: this.msgItems,
-      checkStatus: "none",
       checkboxList: [
         { title: "全選" },
         { title: "全不選" },
         { title: "已讀郵件" },
         { title: "未讀郵件" },
         { title: "已加星號" },
-        { title: "已加星號" }
+        { title: "未加星號" }
       ],
-      startPageRow: 1
+      rowNumber: 5,
+      rowStart: 1
     }
   },
   computed: {
     showPageStatus() {
-      let start = this.startPageRow
       let len = this.msgItems.length
-      if (start + 9 < len) {
-        return `${start} - ${start + 9} 列（ 共 ${len} 列 ）`
-      } else if (start < len && start + 9 > len) {
-        return `${start} - ${len} 列（ 共 ${len} 列 ）`
+      if (!len) {
+        return
+      } else if (len < this.rowNumber && len !== 0) {
+        return `${this.rowStart} - ${len} 列 (共 ${len} 列)`
+      } else if (len > this.rowNumber) {
+        return `${this.rowStart} - ${this.rowNumber} 列 (共 ${len} 列)`
       }
+    },
+    showIcons() {
+      if (this.showCheckStatus === "none") {
+        return "mdi-checkbox-blank-outline"
+      } else if (this.showCheckStatus === "all") {
+        return "mdi-check-box-outline"
+      } else if (this.showCheckStatus === "part") {
+        return "mdi-minus-box"
+      }
+    },
+    showCheckStatus: {
+      get() {
+        let isNone = this.msgItems.every(el => el.isCheckbox === false)
+        let isAll = this.msgItems.every(el => el.isCheckbox === true)
+        if (isAll) {
+          return "all"
+        } else if (isNone) {
+          return "none"
+        } else if (!isAll && !isNone) {
+          return "part"
+        }
+      },
+      set() {}
     }
   },
-  created() {
-    eventBus.$on("check-status", this.onCheckStatus)
-  },
-  beforeDestroy() {
-    eventBus.$on("check-status", this.onCheckStatus)
-  },
   methods: {
-    /**
-     * 選擇分頁，並通知篩選頁面發出該頁面訊息列請求
-     * @param {string} d 選擇分頁
-     */
-    async getPageMsgData(d) {
-      let start = this.startPageRow
-      let len = this.msgItems.length
-      if (d === "left" && start > 1) {
-        eventBus.$emit("get-page", { start })
-        start = start - 10
-      } else if (d === "right" && start + 9 < len) {
-        eventBus.$emit("get-page", { start })
-        this.startPageRow = this.startPageRow + 10
-      }
+    onTagMultipleItemHandler(tagName) {
+      this.$emit("on-tag-multiple-item-handler", tagName)
     },
-    /**
-     * 勾選全部訊息、取消勾選訊息
-     * @param {string} s none, part, all
-     */
-    async onCheckAll(s) {
-      if (s === "none") {
-        this.checkStatus = "all"
-        eventBus.$emit("check-all-items", { s })
-      } else if (s === "all") {
-        this.checkStatus = "none"
-        eventBus.$emit("check-all-items", { s })
-      } else if (s === "part") {
-        this.checkStatus = "none"
-        eventBus.$emit("check-all-items", { s })
+    getMsgData(page) {
+      if (page === -1 && this.rowStart > 1) {
+        this.$emit("get-page-msg-data", page)
+        return
       }
+      if (page === 1 && this.rowNumber < this.msgItems.length) {
+        this.$emit("get-page-msg-data", page)
+        return
+      }
+      return
     },
-    /**
-     * 接收各篩選頁面的 checkbox 統計，判斷是否全選、部分或是全部選
-     * @param t [0]:勾選數、[1]:訊息總數
-     */
-    async onCheckStatus(t) {
-      if (t[0] === 0) {
-        this.checkStatus = "none"
-      } else if (t[0] !== t[1]) {
-        this.checkStatus = "part"
-      } else if (t[0] === t[1] && t[0] !== 0) {
-        this.checkStatus = "all"
-      }
+    onChooseCheckItems(title) {
+      this.$emit("choose-check-items", title)
     }
   }
 }

@@ -1,7 +1,13 @@
 <template>
   <div>
-    <v-message-toolbar :msgItems="showMsgInboxItems" />
-    <v-tabs>
+    <v-message-toolbar
+      :msgItems="showMsgInboxItems"
+      v-on:on-tag-multiple-item-handler="tagMultipleItemHandler"
+      v-on:get-page-msg-data="getPageMsgData"
+      v-on:choose-check-items="chooseCheckItems"
+    />
+
+    <v-tabs grow>
       <v-tab>
         <v-icon
           class="mr-2"
@@ -24,122 +30,355 @@
         <span>促銷內容</span>
       </v-tab>
     </v-tabs>
-
-    <v-list dense>
+    <v-list
+      dense
+      flat
+    >
       <v-message-item
         v-for="(item,key) in showMsgInboxItems"
         :key="key"
         :msgItem="item"
+        v-on:on-tag-item-handler="tagItemHandler"
+        v-on:on-read-item="openItem"
       />
     </v-list>
   </div>
 </template>
 
 <script>
+import { apiGetMsgData, apiPutMsgTag } from "../../plugins/api"
 export default {
   name: "TheSidebarInbox",
   data() {
     return {
-      msgInboxData: [],
-      isCheckStatus: "none",
-      isCheckLen: 0,
-      inboxItemsLen: 0
+      msgInboxData: [] // call api data
     }
   },
+  watch: {},
   computed: {
     showMsgInboxItems: {
       get() {
-        let msg_inbox_items = []
-        msg_inbox_items = this.msgInboxData.filter(el => !el.isArchive) // 不確定是否 api call 到的資料是否就會是專屬「收件夾」的資料？如果是就不需要進行 filter 過濾到已封存的訊息
-        this.inboxItemsLen = msg_inbox_items.length
-        return msg_inbox_items
+        return this.msgInboxData
       },
       set(val) {
-        this.msg_inbox_items = val
+        this.msgInboxData = val
       }
     }
   },
-  async created() {
-    this.getMsgInboxData()
-    eventBus.$on("check-item", this.onCheckMsgItem)
-    eventBus.$on("check-all-items", this.onCheckAll)
-    eventBus.$on("get-page", this.getMsgPageData)
-  },
-  beforeDestroy() {
-    eventBus.$off("check-item", this.onCheckMsgItem)
-    eventBus.$on("check-all-items", this.onCheckAll)
-    eventBus.$off("get-page", this.getMsgData)
+  created() {
+    this.getMsgData()
   },
   methods: {
-    /**
-     * 接受 msg-toolbar 的事件，將所有訊息迭代操作
-     * @param s none, all, part
-     */
-    async onCheckAll(s) {
-      s = s.s
-      if (s === "none") {
-        this.showMsgInboxItems = this.showMsgInboxItems.map(el => {
+    tagMultipleItemHandler(tagName) {
+      if (tagName === "none" || tagName === "all" || tagName === "part") {
+        return this.checkAll(tagName)
+      }
+      if (tagName === "archive") {
+        return this.archiveItem("multiple")
+      }
+      if (tagName === "deletemail") {
+        return this.deleteMailItem("multiple")
+      }
+      if (tagName === "delete") {
+        return this.deleteItem("multiple")
+      }
+      if (tagName === "read") {
+        return this.readItem("multiple")
+      }
+      if (tagName === "postpone") {
+        return this.postponeItem("multiple")
+      }
+      return
+    },
+    tagItemHandler(s) {
+      if (s.tagName === "check") {
+        return this.checkInboxItem(s)
+      }
+      if (s.tagName === "star") {
+        return this.starItem(s)
+      }
+      if (s.tagName === "archive") {
+        return this.archiveItem(s)
+      }
+      if (s.tagName === "delete") {
+        return this.deleteItem(s)
+      }
+      if (s.tagName === "read") {
+        return this.readItem(s)
+      }
+      if (s.tagName === "postpone") {
+        return this.postponeItem(s)
+      }
+      return
+    },
+    checkInboxItem(s) {
+      function tagToggle(el) {
+        if (el.id === s.id) {
+          el.isCheckbox = !s.isTag
+        }
+        return el
+      }
+      this.msgInboxData = _.map(this.msgInboxData, tagToggle)
+    },
+    checkAll(tagName) {
+      function checks(el) {
+        if (tagName === "none") {
           el.isCheckbox = true
-          return el
-        })
-        this.isCheckLen = this.showMsgInboxItems.length
-      } else if (s === "all") {
-        this.showMsgInboxItems = this.showMsgInboxItems.map(el => {
+        } else if (tagName === "all" || tagName === "part") {
           el.isCheckbox = false
+        }
+        return el
+      }
+      this.msgInboxData = _.map(this.msgInboxData, checks)
+    },
+    async starItem(s) {
+      let result = await apiPutMsgTag()
+      if (!result.status === 200) {
+        return
+      } else {
+        this.msgInboxData = this.msgInboxData.map(el => {
+          if (el.id === s.id) {
+            el.isStar = !s.isTag
+          }
           return el
         })
-        this.isCheckLen = 0
-      } else if (s === "part") {
-        this.showMsgInboxItems = this.showMsgInboxItems.map(el => {
-          el.isCheckbox = false
-          return el
-        })
-        this.isCheckLen = 0
+        //this.getMsgData()
       }
     },
-    /**
-     * 接收 msg 組件發出的事件，通知 msg-toolbar 組件以判斷是否全部勾選、部分勾選或是全部沒勾選
-     * @param b true, false
-     */
-    async onCheckMsgItem(b) {
-      if (b.status === false) {
-        this.isCheckLen++
-        eventBus.$emit("check-status", {
-          0: this.isCheckLen,
-          1: this.inboxItemsLen
-        })
-      } else if (b.status === true) {
-        this.isCheckLen--
-        eventBus.$emit("check-status", {
-          0: this.isCheckLen,
-          1: this.inboxItemsLen
-        })
+    async archiveItem(s) {
+      if (s === "multiple") {
+        let result = await apiPutMsgTag()
+        if (!result.status === 200) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.isCheckbox === true) {
+              el.isArchive = true
+            }
+            return el
+          })
+          //this.getMsgData()
+        }
+      } else {
+        let result = await apiPutMsgTag()
+        if (!result.status === 200) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.id === s.id) {
+              el.isArchive = !s.isTag
+            }
+            return el
+          })
+          //this.getMsgData()
+        }
       }
     },
-    async getMsgInboxData() {
-      let result
-      result = await this.axios.get(
-        "https://next.json-generator.com/api/json/get/Vyc5O-JkO"
-      )
-      if (!result) {
+    async deleteMailItem(s) {
+      if (s === "multiple") {
+        let result = await apiPutMsgTag()
+        if (!result.status === 200) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.isCheckbox === true) {
+              el.isDeleteMail = true
+            }
+            return el
+          })
+          //this.getMsgData()
+        }
+      }
+    },
+    async deleteItem(s) {
+      if (s === "multiple") {
+        let result = await apiPutMsgTag()
+        if (!result.status === 200) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.isCheckbox === true) {
+              el.isDelete = true
+            }
+            return el
+          })
+          //this.getMsgData()
+        }
+      } else {
+        let result = await apiPutMsgTag()
+        if (!result.status === 200) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.id === s.id) {
+              el.isDelete = !s.isTag
+            }
+            return el
+          })
+          //this.getMsgData()
+        }
+      }
+    },
+    async readItem(s) {
+      if (s === "multiple") {
+        let result = await apiPutMsgTag()
+        if (!result.status === 200) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.isCheckbox === true) {
+              el.isRead = true
+            }
+            return el
+          })
+          //this.getMsgData()
+        }
+      } else {
+        let result = await apiPutMsgTag()
+        if (!result.status === 200) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.id === s.id) {
+              el.isRead = !s.isTag
+            }
+            return el
+          })
+          //this.getMsgData()
+        }
+      }
+    },
+    async postponeItem(s) {
+      if (s === "multiple") {
+        let result = await apiPutMsgTag()
+        if (!result.status === 200) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.isCheckbox === true) {
+              el.isPostpone = true
+            }
+            return el
+          })
+          //this.getMsgData()
+        }
+      } else {
+        let result = await apiPutMsgTag()
+        if (!result.status === 200) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.id === s.id) {
+              el.isPostpone = !s.isTag
+            }
+            return el
+          })
+          //this.getMsgData()
+        }
+      }
+    },
+    async chooseCheckItems(title) {
+      if (title === "全選") {
+        this.checkAll("none")
         return
       }
-      this.msgInboxData = JSON.parse(JSON.stringify(result.data))
-    },
-    /**
-     * 拿分頁訊息
-     * @param p 起始頁
-     */
-    async getMsgPageData(p) {
-      let result
-      result = await this.getMsgInboxData()
-      if (!result) {
+      if (title === "全不選") {
+        this.checkAll("all")
         return
       }
-      result = this.axios.get(
-        "https://next.json-generator.com/api/json/get/Vyc5O-JkO"
-      ) // 帶參數拿分頁訊息
-    }
+      if (title === "已讀郵件") {
+        let result = await this.removeAllCheckItems()
+        if (!result) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.isRead === true) {
+              el.isCheckbox = true
+            }
+            return el
+          })
+        }
+        return
+      }
+      if (title === "未讀郵件") {
+        let result = await this.removeAllCheckItems()
+        if (!result) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.isRead === false) {
+              el.isCheckbox = true
+            }
+            return el
+          })
+        }
+        return
+      }
+      if (title === "已加星號") {
+        let result = await this.removeAllCheckItems()
+        if (!result) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.isStar === true) {
+              el.isCheckbox = true
+            }
+            return el
+          })
+        }
+        return
+      }
+      if (title === "未加星號") {
+        let result = await this.removeAllCheckItems()
+        if (!result) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.isStar === false) {
+              el.isCheckbox = true
+            }
+            return el
+          })
+        }
+        return
+      }
+    },
+    async openItem(s) {
+      let result = await this.$router.push({
+        name: "inboxMsg",
+        params: { msgId: s.id }
+      })
+      if (!result) {
+        return
+      } else {
+        result = await apiPutMsgTag()
+        if (!result.status === 200) {
+          return
+        } else {
+          this.msgInboxData = this.msgInboxData.map(el => {
+            if (el.id === s.id) {
+              el.isRead = !s.isTag
+            }
+            return el
+          })
+          //this.getMsgData()
+        }
+      }
+    },
+    async removeAllCheckItems() {
+      this.msgInboxData = this.msgInboxData.map(el => {
+        el.isCheckbox = false
+        return el
+      })
+      return this.msgInboxData
+    },
+    async getMsgData() {
+      let result = await apiGetMsgData()
+      if (result) {
+        this.msgInboxData = result.data
+      }
+    },
+    async getPageMsgData(page) {}
   }
 }
 </script>

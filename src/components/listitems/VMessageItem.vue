@@ -1,17 +1,33 @@
 <template>
-  <v-list-item-group>
-    <v-list-item inactive>
+  <div :class="{
+    'listitems_vmessageitem-check' : msgItem.isCheckbox,
+    'listitems_vmessageitem-read' : msgItem.isRead
+    }">
+    <v-list-item @click="onReadItem(msgItem.id,msgItem.isRead,'read')">
       <v-list-item-icon>
-        <v-icon
+        <v-btn
+          icon
+          small
           class="mr-1"
-          @click="onCheckMsgItem(msgItem.isCheckbox)"
-          v-text="msgItem.isCheckbox ? 'mdi-check-box-outline' : 'mdi-checkbox-blank-outline'"
-        />
-        <v-icon
-          :color="msgItem.isStar ? 'yellow accent-4' : 'grey'"
-          @click="onStarMsgItem(msgItem.isStar)"
-          v-text="msgItem.isStar ? 'mdi-star' : 'mdi-star-outline'"
-        />
+        >
+          <v-icon
+            @click.stop="onTagItemHandler(msgItem.id,msgItem.isCheckbox,'check')"
+            v-text="msgItem.isCheckbox ?
+          'mdi-check-box-outline' :
+          'mdi-checkbox-blank-outline'"
+          />
+        </v-btn>
+        <v-btn
+          icon
+          small
+          class="mr-1"
+        >
+          <v-icon
+            :color="msgItem.isStar ? 'yellow accent-4' : 'grey'"
+            @click.stop="onTagItemHandler(msgItem.id,msgItem.isStar,'star')"
+            v-text="msgItem.isStar ? 'mdi-star' : 'mdi-star-outline'"
+          />
+        </v-btn>
       </v-list-item-icon>
       <slot name="content">
         <v-list-item-content>
@@ -29,52 +45,72 @@
       <v-list-item-icon class="message-append-icons">
         <v-tooltip top>
           <template v-slot:activator="{ on }">
-            <v-icon
+            <v-btn
+              icon
+              small
               class="mr-1"
-              @click="onMessageItemArchive()"
-              v-on="on"
-              v-text="'mdi-archive-arrow-down-outline'"
-            />
+            >
+              <v-icon
+                @click.stop="onTagItemHandler(msgItem.id,msgItem.isArchive,'archive')"
+                v-on="on"
+                v-text="'mdi-archive-arrow-down-outline'"
+              />
+            </v-btn>
           </template>
           <span>封存</span>
         </v-tooltip>
         <v-tooltip top>
           <template v-slot:activator="{ on }">
-            <v-icon
+            <v-btn
+              icon
+              small
               class="mr-1"
-              @click="onMessageItemDelete()"
-              v-on="on"
-              v-text="'mdi-delete-outline'"
-            />
+            >
+              <v-icon
+                @click.stop="onTagItemHandler(msgItem.id,msgItem.isDelete,'delete')"
+                v-on="on"
+                v-text="'mdi-delete-outline'"
+              />
+            </v-btn>
           </template>
           <span>刪除</span>
         </v-tooltip>
         <v-tooltip top>
           <template v-slot:activator="{ on }">
-            <v-icon
+            <v-btn
+              icon
+              small
               class="mr-1"
-              @click="onMessageItemRead()"
-              v-on="on"
-              v-text="'mdi-email-open'"
-            />
+            >
+              <v-icon
+                @click.stop="onTagItemHandler(msgItem.id,msgItem.isRead,'read')"
+                v-on="on"
+                v-text="msgItem.isRead ? 'mdi-email-open' : 'mdi-email'"
+              />
+            </v-btn>
           </template>
           <span>標示為已讀取</span>
         </v-tooltip>
         <v-tooltip top>
           <template v-slot:activator="{ on }">
-            <v-icon
+            <v-btn
+              icon
+              small
               class="mr-1"
-              @click="onMessageItemPostpone()"
-              v-on="on"
-              v-text="'mdi-clock'"
-            />
+            >
+              <v-icon
+                @click.stop="onTagItemHandler(msgItem.id,msgItem.isPostpone,'postpone')"
+                v-on="on"
+                v-text="'mdi-clock'"
+              />
+            </v-btn>
           </template>
           <span>延後</span>
         </v-tooltip>
       </v-list-item-icon>
     </v-list-item>
     <v-divider />
-  </v-list-item-group>
+  </div>
 </template>
 
 <script>
@@ -85,45 +121,34 @@ export default {
   },
   data() {
     return {
-      propsMsgItem: this.msgItem,
       color: "blue-grey darken-1"
     }
   },
   methods: {
-    /**
-     * 勾選訊息，並通知各篩選頁面
-     * 問題：checkbox 狀態是否需要 call api
-     * @param b true, false
-     */
-    async onCheckMsgItem(b) {
-      let status
-      if (b === false) {
-        this.propsMsgItem.isCheckbox = true
-        eventBus.$emit("check-item", { status: b })
-      } else {
-        this.propsMsgItem.isCheckbox = false
-        eventBus.$emit("check-item", { status: b })
+    onTagItemHandler(id, isTag, tagName) {
+      let status = {
+        id,
+        isTag,
+        tagName
       }
+      this.$emit("on-tag-item-handler", status)
     },
-    /**
-     * 加上星號，並通知各篩選頁面
-     * 問題：是否先 call api，然後才改變畫面，這樣一來是否 call 完再通知回此組件去改變畫面
-     * @param b true, false
-     */
-    async onStarMsgItem(b) {
-      let status
-      if (b === false) {
-        this.propsMsgItem.isStar = true
-        eventBus.$emit("star-item", { status: b })
-      } else {
-        this.propsMsgItem.isStar = false
-        eventBus.$emit("star-item", { status: b })
+    onReadItem(id, isTag, tagName) {
+      let status = {
+        id,
+        isTag,
+        tagName
       }
-    },
-    async onMessageItemArchive(b) {},
-    async onMessageItemDelete(b) {},
-    async onMessageItemRead(b) {},
-    async onMessageItemPostpone(b) {}
+      this.$emit("on-read-item", status)
+    }
   }
 }
 </script>
+<style lang="scss">
+.listitems_vmessageitem-check {
+  background-color: lightgrey;
+}
+.listitems_vmessageitem-read {
+  background-color: lightgrey;
+}
+</style>
