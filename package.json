@@ -24,7 +24,7 @@
     "@mdi/font": "^4.7.95",
     "@mdi/js": "^4.7.95",
     "@vue/cli-plugin-babel": "^4.1.0",
-    "@vue/cli-service": "^4.1.0",
+    "@vue/cli-service": "^5.0.8",
     "deepmerge": "^4.2.2",
     "fibers": "^4.0.2",
     "node-sass": "^4.12.0",
